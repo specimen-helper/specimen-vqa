@@ -3,7 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>标本留取智能助手</title>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>检验标本智能助手</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Noto Sans SC',sans-serif;background:#f5f7fa;color:#1e293b;min-height:100vh;touch-action:manipulation}
@@ -35,19 +38,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Noto Sans S
 .typebtn .check{display:none;margin-right:3px}
 .typebtn.on .check{display:inline}
 
-.frame-wrap{position:relative;width:100%;aspect-ratio:16/9;min-height:140px;cursor:pointer;-webkit-user-select:none;user-select:none}
+.frame-wrap{position:relative;width:100%;aspect-ratio:16/9;min-height:140px}
 .frame{width:100%;height:100%;background:#f8fafc;border:2px dashed #d1d5db;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;transition:all .3s}
 .frame.on{background:#f0fdff;border-color:#06b6d4;border-style:solid}
-.frame .ico{font-size:32px;margin-bottom:4px;pointer-events:none}
-.frame .txt{font-size:14px;font-weight:600;color:#1e293b;pointer-events:none}
-.frame .sub{font-size:11px;color:#64748b;margin-top:2px;pointer-events:none}
-.frame .preview{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none;z-index:1;pointer-events:none}
+.frame .ico{font-size:32px;margin-bottom:4px}
+.frame .txt{font-size:14px;font-weight:600;color:#1e293b}
+.frame .sub{font-size:11px;color:#64748b;margin-top:2px}
+.frame .preview{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none;z-index:2}
 .scan{position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#06b6d4,transparent);box-shadow:0 0 8px #06b6d4;animation:scan 2s linear infinite;display:none;z-index:3}
 .frame.on .scan{display:block}
 @keyframes scan{0%{top:5%;opacity:0}15%{opacity:1}85%{opacity:1}100%{top:95%;opacity:0}}
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
 
-.fileInput{position:absolute;inset:0;width:100%;height:100%;opacity:0;z-index:10;pointer-events:none}
+/* iOS兼容：label触发文件选择 */
+.fileInput{position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;z-index:10;cursor:pointer;font-size:20px}
 
 .res{margin-top:8px;padding:8px 10px;background:linear-gradient(135deg,#ecfdf5,#d1fae5);border-radius:10px;border:1px solid #a7f3d0;display:none}
 .res.bad{background:linear-gradient(135deg,#fef2f2,#fecaca);border-color:#fca5a5}
@@ -64,17 +68,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Noto Sans S
 .res .ai{margin-top:6px;padding:6px 8px;background:#fff;border-radius:8px;font-size:12px;line-height:1.6}
 .res .ai strong{color:#4f46e5}
 .res.bad .ai strong{color:#ef4444}
-.res .fixbar{margin-top:8px;display:flex;gap:6px;flex-wrap:wrap}
-.res .fixbar .fixbtn{padding:4px 10px;background:#f1f5f9;border:1px solid #cbd5e1;border-radius:12px;font-size:11px;color:#475569;cursor:pointer}
-.res .fixbar .fixbtn:active{background:#e2e8f0}
-
-.pre{background:#fff;border-radius:12px;padding:8px 10px;margin-bottom:8px;box-shadow:0 1px 4px rgba(0,0,0,.04);display:none}
-.pre.show{display:block}
-.pre .tit{font-size:12px;font-weight:700;margin-bottom:6px}
-.pre .tit::before{content:'🔮 '}
-.pre .tags{display:flex;flex-wrap:wrap;gap:6px}
-.pre .tag{padding:5px 10px;background:linear-gradient(135deg,#eef2ff,#e0e7ff);border:1px solid #c7d2fe;border-radius:14px;font-size:11px;color:#4f46e5;cursor:pointer;font-family:inherit;-webkit-appearance:none;border:none}
-.pre .tag:active{transform:scale(.95)}
+.res .fixbar{margin-top:2px;display:flex;gap:3px;flex-wrap:nowrap;align-items:center;overflow-x:auto}
+.res .fixbar::-webkit-scrollbar{display:none}
+.res .fixbar .fixbtn{padding:2px 5px;background:#f1f5f9;border:1px solid #cbd5e1;border-radius:6px;font-size:10px;color:#475569;cursor:pointer;white-space:nowrap;flex-shrink:0;line-height:1.8}
+.res .fixbar .fixbtn:active{background:#e2e8f0;transform:scale(.95)}
 
 .chat{background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.04);margin-bottom:8px;display:flex;flex-direction:column;flex:1;min-height:0}
 .chat .bar{background:linear-gradient(135deg,#667eea,#764ba2);padding:8px 10px;display:flex;align-items:center;gap:8px;flex-shrink:0}
@@ -96,11 +93,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Noto Sans S
 .qtag{padding:5px 10px;background:#eff6ff;border:1px solid #dbeafe;border-radius:20px;font-size:11px;color:#4f46e5;cursor:pointer;font-family:inherit;-webkit-appearance:none;border:none}
 .qtag:active{transform:scale(.95)}
 
+/* ===== 连续不合格预警 ===== */
+.warning-card{background:linear-gradient(135deg,#fef2f2,#fecaca);border-radius:12px;padding:12px;margin-top:10px;display:none;animation:shake .5s;border:1px solid #fca5a5}
+.warning-card.show{display:block}
+.warning-card .head{display:flex;align-items:center;gap:8px;font-size:13px;color:#991b1b;font-weight:700}
+.warning-card .body{font-size:11px;color:#b91c1c;margin-top:6px;padding-left:28px}
+
 .inwrap{display:flex;gap:8px;padding-top:6px;border-top:1px solid #e2e8f0;flex-shrink:0}
 .inwrap input{flex:1;padding:8px 12px;border:1.5px solid #e2e8f0;border-radius:20px;font-size:13px;outline:none;background:#f5f7fa;-webkit-appearance:none}
 .inwrap input:focus{border-color:#6366f1;background:#fff}
-.inwrap button{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;-webkit-appearance:none}
+.inwrap button{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;-webkit-appearance:none;flex-shrink:0}
 .inwrap button:active{transform:scale(.92)}
+.inwrap button#micBtn{background:rgba(148,163,184,.15);border:1px solid rgba(148,163,184,.3);color:#64748b}
+.inwrap button#micBtn.recording{animation:micPulse 1.2s infinite;background:linear-gradient(135deg,#10b981,#059669);border-color:#10b981;color:#fff}
+@keyframes micPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
 
 .foot{text-align:center;padding:6px;font-size:10px;color:#64748b;line-height:1.5}
 .foot .bad{display:inline-block;background:linear-gradient(135deg,#dbeafe,#e9d5ff);color:#4f46e5;padding:2px 8px;border-radius:16px;font-size:10px;font-weight:600;margin-bottom:2px}
@@ -128,11 +134,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Noto Sans S
 <div class="app">
   <div class="header">
     <span class="tag">V2.0</span>
-    <h1>标本留取智能助手</h1>
-    <p>拍照识别 · 智能质控 · 即时指导</p>
+    <h1>检验标本智能助手</h1>
+    <p>拍照判断 · 智能问答 · 即时指导</p>
   </div>
   <div class="main">
-    <div class="tip">💡 选择标本类型后拍照，自动识别并评估质量</div>
+    <div class="tip">💡 选择标本类型后拍照，自动判断和支持追问</div>
 
     <!-- AI服务状态（仅异常时显示） -->
     <div class="ai-status warn" id="aiStatus" style="display:none">
@@ -153,6 +159,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Noto Sans S
         </div>
       </div>
 
+      <!-- iOS最可靠方案：透明file input直接覆盖拍照区域 -->
       <div class="frame-wrap" id="frameWrap">
         <div class="frame" id="frame">
           <div class="scan"></div>
@@ -161,7 +168,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Noto Sans S
           <div class="txt" id="ftxt">请先选择上方标本类型</div>
           <div class="sub" id="fsub">选择后点击拍照</div>
         </div>
-        <input type="file" class="fileInput" id="fileInput" accept="image/*" capture="environment">
+        <input type="file" class="fileInput" id="fileInput" accept="image/*">
       </div>
 
       <div class="hint" id="hint">⚠️ 请先选择标本类型，再进行拍照</div>
@@ -169,6 +176,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Noto Sans S
 
       <div class="rebtn" id="rebtn">
         <button onclick="resetPhoto()">🔄 重新拍照</button>
+      </div>
+
+      <!-- 连续不合格预警 -->
+      <div class="warning-card" id="warningCard">
+        <div class="head">⚠️ 连续2次不合格，建议护士介入指导</div>
+        <div class="body">已连续2次识别为不合格标本，可能存在采集方法问题，建议现场护士协助指导。</div>
       </div>
 
       <!-- 错误提示 -->
@@ -193,23 +206,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Noto Sans S
         <div class="row"><span class="lab">留取量评估</span><span class="val" id="rvol">—</span></div>
         <div class="row"><span class="lab">状态评估</span><span class="val" id="rstatus">—</span></div>
         <div class="ai" id="rai"></div>
-        <div class="fixbar">
-          <span style="font-size:10px;color:#94a3b8">识别有误？人工纠正：</span>
-          <button class="fixbtn" onclick="fixColor('紫')">🟣紫</button>
-          <button class="fixbtn" onclick="fixColor('蓝')">🔵蓝</button>
-          <button class="fixbtn" onclick="fixColor('绿')">🟢绿</button>
-          <button class="fixbtn" onclick="fixColor('灰')">⚪灰</button>
-          <button class="fixbtn" onclick="fixColor('黄')">🟡黄</button>
-          <button class="fixbtn" onclick="retryAnalyze()">🔄重识</button>
-        </div>
+        <div class="fixbar"><span style="font-size:11px;color:#64748b;white-space:nowrap;margin-right:2px;flex-shrink:0">纠正管帽颜色：</span><button class="fixbtn" onclick="fixColor('紫')" title="紫头管">🟣紫</button><button class="fixbtn" onclick="fixColor('蓝')" title="蓝头管">🔵蓝</button><button class="fixbtn" onclick="fixColor('绿')" title="绿头管">🟢绿</button><button class="fixbtn" onclick="fixColor('灰')" title="灰头管">⚪灰</button><button class="fixbtn" onclick="fixColor('黄')" title="黄头管">🟡黄</button><button class="fixbtn" onclick="retryAnalyze()" title="重新识别">🔄重识</button></div>
       </div>
     </div>
 
     <div class="chat">
-      <div class="bar"><div class="av">💬</div><div class="tit">标本助手 · 智能问答</div></div>
+      <div class="bar"><div class="av">💬</div><div class="tit">标本助手 · 智能问答</div><button id="voiceBtn" onclick="toggleVoice()" style="margin-left:auto;background:rgba(148,163,184,.2);border:none;border-radius:50%;width:28px;height:28px;cursor:pointer;color:#cbd5e1;font-size:13px;display:flex;align-items:center;justify-content:center" title="点击开启语音播报">🔇</button></div>
       <div class="body">
         <div class="msgs" id="msgs">
-          <div class="welcome" id="wel">您好！我是标本采集辅助助手<br>支持拍照自查 + 知识问答<br>点击下方问题或输入您的问题</div>
+          <div class="welcome" id="wel">我是您的标本助手<br>点击下方问题或输入您的问题</div>
         </div>
         <div class="qwrap">
           <div class="qlist" id="qlist">
@@ -224,6 +229,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Noto Sans S
           </div>
         </div>
         <div class="inwrap">
+          <button id="micBtn" title="语音输入"><svg width="18" height="22" viewBox="0 0 18 22" fill="none"><path d="M9 14C11.2091 14 13 12.2091 13 10V4C13 1.79086 11.2091 0 9 0C6.79086 0 5 1.79086 5 4V10C5 12.2091 6.79086 14 9 14Z" fill="currentColor"/><path d="M1 10C1 10 1 15 9 15C17 15 17 10 17 10" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M9 15V19M9 19L6 22M9 19L12 22" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
           <input type="text" id="inp" placeholder="请输入问题...">
           <button id="sendBtn">➤</button>
         </div>
@@ -231,7 +237,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Noto Sans S
     </div>
 
     <div class="foot">
-      <div class="bad">多模态AI视觉问答 · 标本质控系统 V2.0</div>
+      <div class="bad">检验前标本即时辅助智能体 V2.0</div>
     </div>
   </div>
 </div>
@@ -239,17 +245,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Noto Sans S
 <script>
 // ==================== 配置：直接调用阿里云百炼API ====================
 // ⚠️ 演示用途：Key暴露于前端，演示结束后请立即在百炼控制台禁用此Key
-var DASHSCOPE_KEY = 'sk-e995de53d46f42c495a830085b08d831';
+var DASHSCOPE_KEY = 'sk-f1c7fe7f75c940adb606879d485393b5';
 var API_URL = 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions';
 
-// ==================== 优化Prompt：强制结构化JSON输出 ====================
-var SYSTEM_PROMPT = "你是一位资深医学检验标本质量评估专家。请对图片中的医疗标本进行严格视觉评估。\n\n## 识别重点（按优先级排序）\n1. **采血管颜色识别**（最关键）：紫色=EDTA-K2(血常规)；蓝色=枸橼酸钠(凝血)；绿色=肝素(血流变)；灰色=氟化钠(血糖)；黄色/金色=促凝剂/分离胶(生化免疫)\n2. **容器类型**：无菌尿杯、粪便采集盒、无菌痰盒、血培养瓶等\n3. **留取量**：通过刻度线/液面高度判断，给出具体估计值\n4. **质量状态**：容器完好性、密封性、有无污染/溶血/凝血\n\n## 输出格式（必须返回JSON，不要markdown代码块）\n{\"specimenType\":\"标本类型\",\"containerType\":\"容器类型\",\"containerColor\":\"管帽颜色(紫/蓝/绿/灰/黄/无)\",\"volume\":\"留取量描述\",\"isQualified\":true/false,\"status\":\"状态评估\",\"confidence\":\"高/中/低\",\"suggestion\":\"指导建议200字内\",\"reason\":\"不合格原因\"}\n\n## 判断标准\n- 尿液≥8ml合格；粪便5-10g合格；血液按管型达刻度线；痰液≥3ml；血培养成人8-10ml/瓶；糖耐量需5个时间点\n- 非标本照片（空白/风景/自拍）：isQualified=false, reason=\"未检测到有效标本\"\n- 颜色无法确定：confidence=\"低\"，containerColor=\"无法确定\"";
+// ==================== 优化Prompt：强制结构化JSON输出（只有合格/不合格两种） ====================
+var SYSTEM_PROMPT = "你是一位资深医学检验标本质量评估专家。请对图片中的医疗标本进行严格视觉评估。\n\n## 识别重点（按优先级排序）\n1. **采血管颜色识别**（最关键）：紫色=EDTA-K2(血常规)；蓝色=枸橼酸钠(凝血)；绿色=肝素(血流变)；灰色=氟化钠(血糖)；黄色/金色=促凝剂/分离胶(生化免疫)\n2. **容器类型**：无菌尿杯、粪便采集盒、无菌痰盒、血培养瓶等\n3. **留取量**：通过刻度线/液面高度判断，给出具体估计值\n4. **质量状态**：容器完好性、密封性、有无污染/溶血/凝血\n\n## 输出格式（必须返回JSON，不要markdown代码块）\n{\"specimenType\":\"标本类型\",\"containerType\":\"容器类型\",\"containerColor\":\"管帽颜色(紫/蓝/绿/灰/黄/无)\",\"volume\":\"留取量描述\",\"isQualified\":true/false,\"status\":\"状态评估\",\"confidence\":\"高/中/低\",\"suggestion\":\"指导建议200字内\",\"reason\":\"不合格原因\"}\n\n## 判断标准\n- 尿液≥8ml合格；粪便5-10g合格；血液按管型达刻度线；痰液≥3ml；血培养成人8-10ml/瓶；糖耐量需5个时间点\n- 非标本照片（空白/风景/自拍）：isQualified=false, reason=\"未检测到有效标本\"\n- 颜色无法确定：confidence=\"低\"，containerColor=\"无法确定\"\n- 判断模糊时（图片质量差）：confidence=\"低\"，但仍必须给出明确的true/false判断，不能含糊\n\n重要：isQualified只能是true（合格）或false（不合格），不允许其他值。看不准时用confidence=\"低\"来体现不确定性，但isQualified必须有明确判断。";
+
 
 // ==================== 状态 ====================
 var selectedType = '';
 var isScanning = false;
 var lastImageB64 = '';
 var lastResult = null;
+var consecutiveUnqualified = 0;
 
 var typeMap = {
   '0': {name:'尿液标本', pre:['中段尿怎么留？','24小时尿怎么留？','月经期能验尿吗？','尿常规要多少尿？']},
@@ -269,9 +277,9 @@ var colorContainerMap = {
 };
 
 // ==================== DOM元素 ====================
-var frameWrap = document.getElementById('frameWrap');
 var frame = document.getElementById('frame');
 var fileInput = document.getElementById('fileInput');
+var photoLabel = document.getElementById('photoLabel');
 var preview = document.getElementById('preview');
 var fico = document.getElementById('fico');
 var ftxt = document.getElementById('ftxt');
@@ -292,14 +300,12 @@ function testAPI(){
     body: JSON.stringify({model:'qwen-vl-plus', messages:[{role:'user',content:[{type:'text',text:'hi'}]}], max_tokens:5})
   }).then(function(r){
     if(r.status === 200 || r.status === 400){
-      // API正常，隐藏状态条
       aiStatus.style.display = 'none';
       aiStatusText.textContent = '';
     } else {
       throw new Error('HTTP ' + r.status);
     }
   }).catch(function(e){
-    // 仅异常时显示警告
     aiStatus.style.display = 'flex';
     aiStatus.className = 'ai-status err';
     aiStatusText.textContent = '✗ 拍照服务异常，可能余额不足或网络故障';
@@ -317,35 +323,19 @@ for(var i=0;i<typebtns.length;i++){
     ftxt.textContent = '已选择：' + typeMap[selectedType].name;
     fsub.textContent = '点击此处拍照或选图';
     hint.classList.remove('show');
-    // 选择类型后，底部推荐自动切换为该类型相关问题
     renderBottomQ(typeMap[selectedType].name, null);
   });
 }
 
-// ==================== 拍照点击代理 ====================
-frameWrap.addEventListener('click', function(){
-  if(selectedType === ''){
-    hint.classList.add('show');
-    frame.style.animation = 'shake .4s';
-    setTimeout(function(){ frame.style.animation=''; }, 400);
-    return;
-  }
-  hint.classList.remove('show');
-  fileInput.click();
-});
+// ==================== 拍照：透明file input覆盖区域（iOS最兼容） ====================
+// fileInput 用CSS绝对定位覆盖整个frame区域，opacity:0使其透明
+// 用户直接点击的就是fileInput本身，iOS/Safari都能正确触发
+// 未选类型时：显示提示动画，但不阻止文件选择器（iOS不允许JS阻止）
 
 // ==================== 文件选择 ====================
 fileInput.addEventListener('change', function(e){
   var file = e.target.files[0];
   if(!file) return;
-  // 必须先选择标本类型
-  if(selectedType === ''){
-    hint.classList.add('show');
-    frame.style.animation = 'shake .4s';
-    setTimeout(function(){ frame.style.animation=''; }, 400);
-    fileInput.value = '';
-    return;
-  }
   hint.classList.remove('show');
   var reader = new FileReader();
   reader.onload = function(ev){
@@ -369,8 +359,9 @@ function resetPhoto(){
   errResEl.style.display = 'none';
   rebtn.classList.remove('show');
   statusbar.classList.remove('show');
+  document.getElementById('warningCard').classList.remove('show');
   fileInput.value = ''; lastImageB64 = ''; lastResult = null;
-  // 重置底部推荐为通用问题
+  consecutiveUnqualified = 0;
   var qlist = document.getElementById('qlist');
   if(qlist){
     qlist.innerHTML = '';
@@ -395,6 +386,12 @@ function doScan(){
   errResEl.style.display = 'none';
   rebtn.classList.remove('show');
   statusbar.classList.add('show');
+  ftxt.textContent = '正在分析中...';
+  fsub.textContent = '正在调用视觉识别引擎...';
+  doScanAI();
+}
+
+function doScanAI(){
   ftxt.textContent = '正在分析中...';
   fsub.textContent = '正在调用视觉识别引擎';
 
@@ -432,18 +429,19 @@ function doScan(){
     var content = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
     if(!content){ showError('API未返回有效识别结果'); isScanning = false; return; }
 
-    // 提取JSON
     var jsonMatch = content.match(/\{[\s\S]*\}/);
     if(!jsonMatch){ showError('AI返回格式异常，未包含JSON。原始输出：' + content.substring(0,200)); isScanning = false; return; }
 
     try{
       var parsed = JSON.parse(jsonMatch[0]);
+      // 强制转换：只允许true/false
+      var qualified = parsed.isQualified === true || parsed.isQualified === 'true';
       showResult({
         type: parsed.specimenType || '—',
         container: parsed.containerType || '—',
         containerColor: parsed.containerColor || '—',
         volume: parsed.volume || '—',
-        qualified: parsed.isQualified !== false,
+        qualified: qualified,
         status: parsed.status || '—',
         confidence: parsed.confidence || '中',
         suggestion: parsed.suggestion || '',
@@ -479,18 +477,32 @@ function showResult(data){
   document.getElementById('rvol').textContent = data.volume;
   document.getElementById('rstatus').textContent = data.status;
 
-  // 合格时不显示原因，只显示建议；不合格时显示原因+建议
+  // 中/低置信度时自动提示人工确认
+  var confirmTag = '';
+  if(data.confidence !== '高'){
+    confirmTag = '<div style="margin-top:6px;padding:5px 8px;background:#fef3c7;border:1px solid #fde68a;border-radius:6px;font-size:11px;color:#92400e">⚠️ 置信度' + data.confidence + '，建议请现场护士人工确认</div>';
+  }
+
   var suggestion = data.suggestion;
   if(isBad && data.reason){
     suggestion = '<strong style="color:#ef4444">⚠️ 不合格原因：</strong>' + data.reason + '<br><br>' + suggestion;
   }
-  document.getElementById('rai').innerHTML = suggestion;
+  document.getElementById('rai').innerHTML = suggestion + confirmTag;
 
   resEl.classList.toggle('bad', isBad);
   resEl.classList.add('show');
   errResEl.style.display = 'none';
 
-  // 底部问答区根据识别结果动态更新推荐
+  if(isBad){
+    consecutiveUnqualified++;
+    if(consecutiveUnqualified >= 2){
+      document.getElementById('warningCard').classList.add('show');
+    }
+  } else {
+    consecutiveUnqualified = 0;
+    document.getElementById('warningCard').classList.remove('show');
+  }
+
   renderBottomQ(data.type, data.containerColor);
   rebtn.classList.add('show');
 }
@@ -529,7 +541,6 @@ function renderBottomQ(type, color){
 }
 
 function getPreQuestions(type, color){
-  // 标准化类型名称（兼容AI返回的各种格式）
   var t = (type || '').toLowerCase().replace(/\s+/g, '');
   
   var base = {
@@ -565,9 +576,7 @@ function getPreQuestions(type, color){
     ]
   };
   
-  // 精确匹配
   if(base[type]) return base[type];
-  // 模糊匹配（兼容AI返回的各种名称）
   if(t.indexOf('尿')>=0) return base['尿液标本'];
   if(t.indexOf('粪')>=0 || t.indexOf('便')>=0) return base['粪便标本'];
   if(t.indexOf('血')>=0 && t.indexOf('培养')>=0) return base['血培养标本'];
@@ -674,6 +683,7 @@ document.querySelectorAll('#qlist .qtag').forEach(function(btn){
 });
 document.getElementById('sendBtn').addEventListener('click', doSend);
 document.getElementById('inp').addEventListener('keypress', function(e){ if(e.key==='Enter') doSend(); });
+document.getElementById('micBtn').addEventListener('click', startVoiceInput);
 
 function sendQ(q){ addMsg(q,'u'); showType(function(){ addMsg(findA(q),'a'); }); }
 function doSend(){
@@ -763,13 +773,101 @@ function findA(t){
   return qa[' default'];
 }
 
+// ==================== 语音播报 ====================
+var voiceEnabled = false;
+
+function toggleVoice(){
+  voiceEnabled = !voiceEnabled;
+  var btn = document.getElementById('voiceBtn');
+  
+  if(voiceEnabled){
+    btn.textContent = '🔊';
+    btn.style.color = '#fff';
+    // iOS：必须在用户点击的同步回调中首次调用 speak 来解锁音频
+    if('speechSynthesis' in window){
+      var u = new SpeechSynthesisUtterance('语音播报已开启');
+      u.lang = 'zh-CN'; u.rate = 1.5; u.volume = 0.1;
+      window.speechSynthesis.speak(u);
+    }
+  } else {
+    btn.textContent = '🔇';
+    btn.style.color = '#cbd5e1';
+    if('speechSynthesis' in window) window.speechSynthesis.cancel();
+  }
+}
+
+function speak(text){
+  if(!voiceEnabled) return;
+  if(!('speechSynthesis' in window)) return;
+  try{ window.speechSynthesis.resume(); }catch(e){}
+  window.speechSynthesis.cancel();
+  var u = new SpeechSynthesisUtterance(text.replace(/<[^>]*>/g,'').substring(0,100));
+  u.lang = 'zh-CN'; u.rate = 1.1; u.volume = 1;
+  window.speechSynthesis.speak(u);
+}
+
+// ==================== 语音输入 ====================
+var recognition = null;
+function startVoiceInput(){
+  if(!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)){
+    addMsg('您的浏览器暂不支持语音输入，请手动输入问题', 'a');
+    return;
+  }
+  var micBtn = document.getElementById('micBtn');
+  if(recognition && micBtn.classList.contains('recording')){
+    recognition.stop();
+    micBtn.classList.remove('recording');
+    return;
+  }
+  var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SpeechRecognition();
+  recognition.lang = 'zh-CN';
+  recognition.continuous = false;
+  recognition.interimResults = false;
+  recognition.maxAlternatives = 1;
+  micBtn.classList.add('recording');
+  document.getElementById('inp').placeholder = '正在听您说话...';
+  recognition.onresult = function(e){
+    var transcript = e.results[0][0].transcript;
+    document.getElementById('inp').value = transcript;
+    document.getElementById('inp').placeholder = '请输入问题...';
+    micBtn.classList.remove('recording');
+    doSend();
+  };
+  recognition.onerror = function(e){
+    micBtn.classList.remove('recording');
+    document.getElementById('inp').placeholder = '请输入问题...';
+    if(e.error === 'not-allowed') addMsg('请允许使用麦克风权限', 'a');
+  };
+  recognition.onend = function(){
+    micBtn.classList.remove('recording');
+    document.getElementById('inp').placeholder = '请输入问题...';
+  };
+  recognition.start();
+}
+
+// ==================== 来源标注 ====================
+function getSourceTag(text){
+  if(text.indexOf('WS/T') >= 0 || text.indexOf('EDTA') >= 0 || text.indexOf('枸橼酸钠') >= 0 || text.indexOf('抗凝') >= 0) return '<span style="font-size:10px;color:#94a3b8;margin-top:4px;display:block">[WS/T 661-2020 临床检验标本采集指南]</span>';
+  if(text.indexOf('中段尿') >= 0 || text.indexOf('24小时尿') >= 0 || text.indexOf('月经') >= 0 || text.indexOf('留取') >= 0) return '<span style="font-size:10px;color:#94a3b8;margin-top:4px;display:block">[WS/T 348-2011 尿标本采集指南]</span>';
+  if(text.indexOf('潜血') >= 0 || text.indexOf('采集勺') >= 0 || text.indexOf('粪便') >= 0) return '<span style="font-size:10px;color:#94a3b8;margin-top:4px;display:block">[临床检验标本采集指南]</span>';
+  if(text.indexOf('采血后') >= 0 || text.indexOf('淤青') >= 0 || text.indexOf('按压') >= 0) return '<span style="font-size:10px;color:#94a3b8;margin-top:4px;display:block">[临床护理实践指南]</span>';
+  if(text.indexOf('OGTT') >= 0 || text.indexOf('糖耐量') >= 0 || text.indexOf('糖水') >= 0) return '<span style="font-size:10px;color:#94a3b8;margin-top:4px;display:block">[WS/T 348-2011 OGTT试验规范]</span>';
+  if(text.indexOf('图像识别') >= 0) return '<span style="font-size:10px;color:#94a3b8;margin-top:4px;display:block">[AI视觉识别+护理规范]</span>';
+  return '';
+}
+
 function addMsg(txt, typ){
   var box = document.getElementById('msgs');
   var wel = document.getElementById('wel');
   if(wel) wel.parentNode.removeChild(wel);
   var d = document.createElement('div');
   d.className = 'bub ' + typ;
-  if(typ==='a') d.innerHTML = '<div class="name">🤖 智检助手</div>' + txt;
+  if(typ==='a'){
+    var srcTag = getSourceTag(txt);
+    d.innerHTML = '<div class="name">🤖 智检助手</div>' + txt + srcTag;
+    speak(txt);
+  }
   else d.textContent = txt;
   box.appendChild(d); box.scrollTop = box.scrollHeight;
 }
